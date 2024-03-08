@@ -8,6 +8,12 @@ const Button = ({ handleClick, text }) => {
   )
 }
 
+const Header = (props) => {
+  return (
+    <h1>{props.text}</h1>
+  )
+}
+
 const App = () => {
   const anecdotes = [
     'If it hurts, do it more often.',
@@ -21,17 +27,32 @@ const App = () => {
   ]
    
   const [selected, setSelected] = useState(0)
+  const [points, setPoints] = useState(new Array(anecdotes.length).fill(0))
 
   const handleAnecdotes = () => {
     let newGenerated = Math.floor(Math.random() * anecdotes.length)
     setSelected(newGenerated)
   } 
 
+  const handleVotes = () => {
+    const copy = [...points]
+    copy[selected] += 1
+    setPoints(copy)
+  }
+
   return (
     <div>
+      <Header text='Anecdote of the day' />
       {anecdotes[selected]}
       <br />
+      has {points[selected]} votes
+      <br />
       <Button handleClick={handleAnecdotes} text='next anecdote' />
+      <Button handleClick={handleVotes} text='vote' />  
+      <Header text='Anecdote with most votes' />
+      {anecdotes[selected]}
+      <br />
+      has {points[selected]} votes
     </div>
   )
 }
