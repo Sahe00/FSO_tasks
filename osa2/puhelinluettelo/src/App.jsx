@@ -12,13 +12,25 @@ const App = () => {
       name: newName
     }
 
+   if (!personSame()) {
     setPersons(persons.concat(personObject))
     setNewName('')
-  }
+      }
+    }
+  
 
   const handlePersonChange = (event) => {
     console.log(event.target.value)
     setNewName(event.target.value)
+  }
+
+  const personSame = () => {
+    if (persons.some(person => person.name === newName)) {
+      window.alert(`${newName} is already added to phonebook`)
+      return true;
+    } else {
+      return false;
+    }
   }
  
   return (
