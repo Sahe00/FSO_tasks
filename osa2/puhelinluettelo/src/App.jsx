@@ -1,47 +1,30 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import Persons from './components/Persons'
+import PersonForm from './components/PersonForm'
+import FilterComponent from './components/Filter'
+import personsService from './services/persons'
 
-const FilterComponent = ({ newFilter, handleFilter }) => (
-  <div>
-    filter shown with: <br></br>
-    <input value={newFilter} onChange={handleFilter}></input>
-  </div>
-)
-
-const PersonForm = ({ addPerson, newName, handlePersonChange, newNumber, handleNumberChange}) => (
-  <form onSubmit={addPerson}>
-        <div>name:<br></br> <input value={newName} onChange={handlePersonChange}/></div>
-        <div>number:<br></br> <input value={newNumber} onChange={handleNumberChange}/></div>
-        <div><br></br><button type="submit">add</button></div>
-    </form>
-)
-
-const Persons = ({ persons }) => (
-  <ul>
-    {persons.map(person => (
-      <li key={person.name}>
-        {person.name} {person.number}
-      </li>
-    ))}
-  </ul>
-)
-
+// App: Root component managing state and logic
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
 
+  // Fetch initial data from the server
   useEffect(() => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
+    personsService
+      .getAll()
+      .then(initialPersons => {
         console.log('promise fulfilled')
-        setPersons(response.data)
+        setPersons(initialPersons)
+      })
+      .catch((error) => {
+        alert('Failed to fetch data from the server.');
       })
   }, [])
 
+  // Add a new person to the phonebook
   const addPerson = (event) => {
     event.preventDefault()
     const personObject = {
@@ -49,43 +32,79 @@ const App = () => {
       number: newNumber
     }
 
-   if (!personSame()) {
-    
-    setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
-      }
-    }
-
-  const handlePersonChange = (event) => {
-    console.log(event.target.value)
-    setNewName(event.target.value)
+    if (!personSame(personObject)) {
+      personsService
+      .create(personObject)
+      .then((returnedPerson) => {
+        console.log("New person added:", returnedPerson); //DEBUG
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
+      })
+      .catch((error) => {
+        alert("Failed to add the person to the phonebook.")
+      })
+    }   
   }
 
-  const handleNumberChange = (event) => {
-    console.log(event.target.value)
-    setNewNumber(event.target.value)
-  }
-
-  const handleFilter = (event) => {
-    setNewFilter(event.target.value)
-  }
-
-  const filteredPersons = newFilter
-    ? persons.filter(person =>
-        person.name.toLowerCase().includes(newFilter.toLocaleLowerCase())
-      )
-    : persons;
-
-
-  const personSame = () => {
-    if (persons.some(person => person.name === newName)) {
-      window.alert(`${newName} is already added to phonebook`)
+  // Check if a person with the same name already exists
+  const personSame = (personObject) => {
+    if (persons.some(person => person.name.toLowerCase() === newName.toLowerCase())) {
+      window.confirm(`'${newName}' is already added to phonebook. Would you like to update the number?`)
+      personsService
+        .update(persons.find(person => person.name.toLowerCase() === newName.toLowerCase()).id, personObject)
+        .then((returnedPerson) => {
+          setPersons(persons.map(person => person.id !== returnedPerson.id ? person : returnedPerson))
+        })
+        .catch((error) => {
+          alert("Failed to update the phonebook.")
+        })
+      
       return true;
     } else {
       return false;
     }
   }
+
+  // Delete a person from the phonebook
+  const deletePerson = (id, name) => {
+    if (window.confirm(`Do you want to delete '${name}' from the phonebook?`)) {
+      personsService
+        .personDelete(id)
+        .then((deleteFeedback) => {
+          console.log("Person has been deleted:", deleteFeedback); //DEBUG
+          setPersons(persons.filter(person => person.id !== id))
+        })
+        .catch((error) => {
+          alert(`Failed to delete '${name}' from the phonebook.`)
+        })
+    }
+  }
+
+
+  // Handle changes in the name input field
+  const handlePersonChange = (event) => {
+    console.log(event.target.value)
+    setNewName(event.target.value)
+  }
+
+  // Handle changes in the number input field
+  const handleNumberChange = (event) => {
+    console.log(event.target.value)
+    setNewNumber(event.target.value)
+  }
+
+  // Handle changes in the filter input field
+  const handleFilter = (event) => {
+    setNewFilter(event.target.value)
+  }
+
+  // Filter persons based on the filter input
+  const filteredPersons = newFilter
+    ? persons.filter(person =>
+        person.name.toLowerCase().includes(newFilter.toLocaleLowerCase())
+      )
+    : persons;
 
   return (
     <div>
@@ -100,7 +119,7 @@ const App = () => {
         handleNumberChange={handleNumberChange}
       />
       <h2>Numbers</h2>
-      <Persons persons={filteredPersons} />
+      <Persons persons={filteredPersons} deletePerson={deletePerson}/>
     </div>
   )
 }
