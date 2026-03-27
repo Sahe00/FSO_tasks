@@ -1,7 +1,8 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
-
+const Person = require('./models/person')
 
 app.use(express.json())
 app.use(express.static('dist'))
@@ -29,8 +30,6 @@ let persons = [
     }
 ]
 
-
-
 morgan.token('body', (req) => {
     return JSON.stringify(req.body)
 })
@@ -47,18 +46,16 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+    Person.find({}).then(result => {
+        console.log(`phonebook:`)
+        response.json(result)
+    })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    const person = persons.find(person => person.id === id)
-
-    if (person) {
+    Person.findById(request.params.id).then((person) => {
         response.json(person)
-    } else {
-        response.status(404).end()
-    }
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -82,24 +79,25 @@ app.post('/api/persons', (request, response) => {
         })
     } 
 
+    // Possibly replace with database version
     if (persons.find(person => person.name === body.name)) {
         return response.status(400).json({
             error: 'name already in the phonebook'
         })
     }
 
-    const person = {
-        id: generateId(),
+    const person = new Person({
+        //id: generateId(),
         name: body.name,
         number: body.number
-    }
+    })
     
-    persons = persons.concat(person)
-    console.log(person)
-    response.json(person)
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
