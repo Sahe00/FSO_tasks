@@ -25,20 +25,25 @@ app.use(express.static('dist'))
 app.use(express.json())
 
 
-app.get('/info', (request, response) => {
-    const count = persons.length;
-    const date = new Date().toString();
-    response.send(`
-        <p>Phonebook has info for ${count} people</p>
-        <p>${date}</p>
-        `)
+app.get('/info', (request, response, next) => {
+    Person.countDocuments({})
+        .then(result => {
+            const date = new Date().toString();
+            response.send(`
+                <p>Phonebook has info for ${result} people</p>
+                <p>${date}</p>
+                `)
+         })
+         .catch(error => next(error))
 })
 
-app.get('/api/persons', (request, response) => {
-    Person.find({}).then(result => {
-        console.log(`phonebook:`)
-        response.json(result)
-    })
+app.get('/api/persons', (request, response, next) => {
+    Person.find({})
+        .then(result => {
+            console.log(`phonebook:`)
+            response.json(result)
+        })
+        .catch(error => next(error))
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
