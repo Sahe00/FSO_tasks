@@ -16,6 +16,8 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === "CastError") {
         return response.status(400).send({ error: 'malformatted id'})
+    } else if (error.name === "ValidationError") {
+        return response.status(400).send({ error: error.message })
     }
 
     next(error)
@@ -66,12 +68,6 @@ const generateId = () => {
 app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
-    if (!body.name || !body.number) {
-        return response.status(400).json({
-            error: 'name or number missing'
-        })
-    } 
-
     // Mongo DB duplicate check
     Person.findOne({ name: body.name })
         .then(person => {
@@ -84,9 +80,12 @@ app.post('/api/persons', (request, response, next) => {
                 number: body.number
             })
 
-            return newPerson.save().then(savedPerson => {
-                response.json(savedPerson)
+            return newPerson
+                .save()
+                .then(savedPerson => {
+                    response.json(savedPerson)
             })
+            .catch((error) => next(error))
         })
         .catch((error) => next(error))
 })

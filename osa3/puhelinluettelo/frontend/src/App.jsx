@@ -13,6 +13,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
   const [popupMessage, setPopupMessage] = useState('')
+
   // Fetch initial data from the server
   useEffect(() => {
     personsService
@@ -36,23 +37,22 @@ const App = () => {
 
     if (!personSame(personObject)) {
       personsService
-      .create(personObject)
-      .then((returnedPerson) => {
-        console.log("New person added:", returnedPerson); //DEBUG
-        setPopupMessage(`Added '${returnedPerson.name}' to the phonebook successfully.`)
-          setTimeout(() => {
-            setPopupMessage(null)
-          }, 4000)
-        setPersons(persons.concat(returnedPerson))
-        setNewName('')
-        setNewNumber('')
-      })
-      .catch((error) => {
-        setPopupMessage(`Failed to add '${returnedPerson.name}' to the phonebook`)
-          setTimeout(() => {
-            setPopupMessage(null)
-          }, 4000)
-      })
+        .create(personObject)
+        .then((returnedPerson) => {
+          //console.log("New person added:", returnedPerson); //DEBUG
+          setPopupMessage(`Added '${returnedPerson.name}' to the phonebook successfully.`)
+          setTimeout(() => setPopupMessage(null), 4000)
+          setPersons(persons.concat(returnedPerson))
+          setNewName('')
+          setNewNumber('')
+        })
+        .catch((error) => {
+          console.log(error.response?.data)
+
+          const serverMessage = error.response?.data?.error
+          setPopupMessage(serverMessage || `Failed to add '${personObject.name}' to the phonebook`)
+          setTimeout(() => setPopupMessage(null), 4000)
+        })
     }   
   }
 
@@ -64,16 +64,12 @@ const App = () => {
         .update(persons.find(person => person.name.toLowerCase() === newName.toLowerCase()).id, personObject)
         .then((returnedPerson) => {
           setPopupMessage(`Updated the phonebook successfully.`)
-          setTimeout(() => {
-            setPopupMessage(null)
-          }, 4000)
+          setTimeout(() => setPopupMessage(null), 4000)
           setPersons(persons.map(person => person.id !== returnedPerson.id ? person : returnedPerson))
         })
         .catch((error) => {
           setPopupMessage(`Failed to update to the phonebook`)
-            setTimeout(() => {
-              setPopupMessage(null)
-            }, 4000)
+          setTimeout(() => setPopupMessage(null), 4000)
         })
       
       return true;
@@ -88,18 +84,14 @@ const App = () => {
       personsService
         .personDelete(id)
         .then((deleteFeedback) => {
-          console.log("Person has been deleted:", deleteFeedback); //DEBUG
+          //console.log("Person has been deleted:", deleteFeedback); //DEBUG
           setPopupMessage(`Removed '${name}' from the phonebook successfully.`)
-          setTimeout(() => {
-            setPopupMessage(null)
-          }, 4000)
+          setTimeout(() => setPopupMessage(null), 4000)
           setPersons(persons.filter(person => person.id !== id))
         })
         .catch((error) => {
           setPopupMessage(`Failed to delete '${name}' from the phonebook`)
-            setTimeout(() => {
-              setPopupMessage(null)
-            }, 4000)
+          setTimeout(() => setPopupMessage(null), 4000)
         })
     }
   }
