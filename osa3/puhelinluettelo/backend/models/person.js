@@ -25,7 +25,7 @@ const personSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: v => /^\d{2,3}-\d+$/.test(v),
-      message: 'Phone number must be in format 09-1234567 or 040-12345678'            
+      message: 'Phone number must be in format 09-1234567 or 040-12345678'
     }
   }
 })
