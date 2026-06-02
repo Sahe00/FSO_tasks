@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "node --test",
-    "dev": "node --watch index.js",
+    "start": "cross-env NODE_ENV=production node index.js",
+    "test": "cross-env NODE_ENV=test node --test",
+    "dev": "cross-env NODE_ENV=development node --watch index.js",
     "lint": "eslint ."
   },
   "repository": {
@@ -14,6 +14,7 @@
     "url": "git+https://github.com/Sahe00/FSO_tasks.git"
   },
   "dependencies": {
+    "cross-env": "^10.1.0",
     "dotenv": "^17.3.1",
     "express": "^5.1.0",
     "lodash": "^4.18.1",
@@ -24,6 +25,7 @@
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
     "eslint": "^10.2.1",
-    "globals": "^17.5.0"
+    "globals": "^17.5.0",
+    "supertest": "^7.2.2"
   }
 }
