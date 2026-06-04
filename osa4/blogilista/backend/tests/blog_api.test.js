@@ -45,6 +45,14 @@ test('all blogs are returned', async () => {
   assert.strictEqual(response.body.length, initialBlogs.length)
 })
 
+test.only('unique identifier is called id', async () => {
+    const response = await api.get('/api/blogs')
+    response.body.forEach(blog => {
+        assert.ok(blog.id, "field 'id' should exist in the blog object") // id actually exists
+        assert.strictEqual(blog._id, undefined) // _id not present
+    });
+})
+
 after(async () => {
     await mongoose.connection.close()
 })
