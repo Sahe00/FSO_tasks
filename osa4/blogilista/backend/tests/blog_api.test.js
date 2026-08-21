@@ -53,7 +53,7 @@ test('unique identifier is called id', async () => {
   })
 })
 
-test.only('a valid blog can be added', async () => {
+test('a valid blog can be added', async () => {
     const newBlog = 
     {
         title: 'Kone sulaa',
