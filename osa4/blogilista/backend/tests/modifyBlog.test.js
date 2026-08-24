@@ -32,30 +32,32 @@ beforeEach(async () => {
     }
 })
 
-// Checking if a blog can be deleted
-describe('remove blogs', () => {
-    test('a blog can be deleted', async () => {
-        const blogsBefore = await Blog.find({})
-        const blogToDelete = blogsBefore[0]
+describe('modify blogs', () => {
+    test.only('a blog can be modified', async () => {
+        const blogBefore = await Blog.findOne({})
+        const updatedInfo = {
+            title: 'Päivitetty titteli',
+            author: 'Päivitetty tekijä',
+            url: 'http://uusi.com',
+            likes: 99
+        }
 
         await api
-            .delete(`/api/blogs/${blogToDelete.id}`)
-            .expect(204)
-        
-        const blogsAfter = await Blog.find({})
-        assert.strictEqual(blogsAfter.length, blogsBefore.length - 1)
-        assert.ok(!blogsAfter.some(blog => blog.id === blogToDelete.id)) // Can't have the id of a deleted blog
+            .put(`/api/blogs/${blogBefore.id}`)
+            .send(updatedInfo)
+            .expect(200)
+
+        const blogAfter = await Blog.findById(blogBefore.id)
+
+        assert.notStrictEqual(blogAfter.title, blogBefore.title)
+        assert.strictEqual(blogAfter.title, updatedInfo.title)
+        assert.strictEqual(blogAfter.author, updatedInfo.author)
+        assert.strictEqual(blogAfter.url, updatedInfo.url)
+        assert.strictEqual(blogAfter.likes, updatedInfo.likes)
     })
 
-    test('delete non-existant blog', async () => {
-        const invalidId = '111111111111111111111111'
-
-        await api
-            .delete(`/api/blogs/${invalidId}`)
-            .expect(404)
-    })
 
     after(async () => {
-      await mongoose.connection.close()
+        await mongoose.connection.close()
     })
 })
