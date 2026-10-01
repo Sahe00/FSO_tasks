@@ -4,6 +4,7 @@ const config = require('./utils/config')
 const logger = require('./utils/logger')
 const middleware = require('./utils/middleware')
 const blogsRouter = require('./controllers/blogs')
+const usersRouter = require('./controllers/users')
 
 const app = express()
 
@@ -21,7 +22,8 @@ app.use(express.static('dist'))         // server static files
 app.use(express.json())                 // parse JSON body
 app.use(middleware.requestLogger)       // log the request
 
-app.use('/api/blogs', blogsRouter)      // handle routes
+app.use('/api/blogs', blogsRouter)      // handle blogs routes
+app.use('/api/users', usersRouter)      // handle users routes
 
 app.use(middleware.unknownEndpoint)     // handle 404s
 app.use(middleware.errorHandler)        // handle errors
